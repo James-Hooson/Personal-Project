@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getMonsters, getMonsterDetails } from '../apiClient'
 import { Link } from 'react-router-dom'
 
 const MonsterCompendium = () => {
+  
    // constants
   const [current, setCurrent] = useState<number>(0)
   const [search, setSearch] = useState<string>('')
@@ -17,6 +18,7 @@ const MonsterCompendium = () => {
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
   setSearch(e.target.value)
 }
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const selectMonster = (index: number)=> {
   setCurrent(index)
   setSearch('')
@@ -29,13 +31,21 @@ const MonsterCompendium = () => {
   }
   const selectedMonster = monsters?.[current]?.index
   
-  const {data: monsterDetails, isLoading,isDetailsError, isError: Error} = useQuery ({
+  const {data: monsterDetails, isLoading, isError: isDetailsError} = useQuery ({
     queryKey: ['monster', selectedMonster],
     queryFn: () => getMonsterDetails(selectedMonster!),
     enabled: !!selectedMonster,
     retry: 2
   })
-
+  useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      setSearch('')
+    }
+  }
+  document.addEventListener('mousedown', handleClickOutside)
+  return () => document.removeEventListener('mousedown', handleClickOutside)
+}, [])
   if (isPending) return <div>Loading....</div>
   if (isError) return <div>Error...</div>
   console.log(monsterDetails)
