@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getMonsters, getMonsterDetails } from '../apiClient'
 import { Link } from 'react-router-dom'
@@ -6,6 +6,17 @@ import { Link } from 'react-router-dom'
 const MonsterCompendium = () => {
   
    // constants
+  const quotes =[
+    "“The world is indeed full of peril, and in it there are many dark places; but still there is much that is fair, and though in all lands love is now mingled with grief, it grows perhaps the greater.” ― J.R.R. Tolkien",
+    "“Monsters are real, and ghosts are real too. They live inside us, and sometimes, they win.” ― Stephen King",
+    "“Do not be afraid of the monsters, for they are but shadows of your own fears.” ― Unknown",
+    "“The only thing we have to fear is fear itself.” ― Franklin D. Roosevelt",
+    "“Courage is resistance to fear, mastery of fear, not absence of fear.” ― Mark Twain",
+    "“In the midst of chaos, there is also opportunity.” ― Sun Tzu",
+    "“Not all those who wander are lost.” ― J.R.R. Tolkien",
+    "“The greatest glory in living lies not in never falling, but in rising every time we fall.” ― Nelson Mandela"
+  ]
+  const randomQuote = quotes[Math.floor(Math.random() * quotes.length)]
   const [current, setCurrent] = useState<number>(0)
   const [search, setSearch] = useState<string>('')
   const {data: monsters, isPending, isError} = useQuery({
@@ -19,9 +30,11 @@ const MonsterCompendium = () => {
   setSearch(e.target.value)
 }
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const selectMonster = (index: number)=> {
-  setCurrent(index)
-  setSearch('')
+  const selectMonster = (index: number) => {
+  if (monsters && index >= 0 && index < monsters.length) {
+    setCurrent(index)
+    setSearch('')
+  }
 }
   const RandomMonster = () => {
     if (monsters && monsters.length > 0){
@@ -164,7 +177,7 @@ const MonsterCompendium = () => {
 
             {/* Combat Stats */}
             <div className="mb-6 bg-red-50 border-2 border-red-800 rounded p-4">
-              <div className="grid grid-cols-2 gap-4 font-serif">
+              <div className="grid grid-cols-3 gap-4 font-serif">
                 <div>
                   <span className="text-red-900 font-bold">Armor Class:</span>
                   <span className="text-red-950 text-xl ml-2 font-bold">{monsterDetails.armor_class[0]?.value}</span>
@@ -179,7 +192,13 @@ const MonsterCompendium = () => {
                     ({monsterDetails.hit_dice})
                   </span>
                 </div>
-                
+                <div>
+                  <span className="text-red-900 font-bold">Speed:</span>
+                  <span className="text-red-950 text-xl ml-2 font-bold">
+                    <span className="text-red-800 text-sm ml-1"></span>
+                    {Object.entries(monsterDetails.speed).map(([type, value]) => `${type} ${value}`).join(', ')}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -263,11 +282,24 @@ const MonsterCompendium = () => {
                 </div>
               </div>
             )}
-
+            {/* Legendary Actions */}
+            {monsterDetails.legendary_actions && monsterDetails.legendary_actions.length > 0 && (
+              <div className="mb-6 border-t-2 border-amber-800 pt-4">
+                <h3 className="text-xl font-bold text-red-900 mb-3 font-serif">✨ Legendary Actions</h3>
+                <div className="space-y-3">
+                  {monsterDetails.legendary_actions.map((action, index) => (
+                    <div key={index} className="bg-amber-50 border border-amber-700 rounded p-3">
+                      <p className="font-bold text-red-900 font-serif italic mb-1">✨ {action.name}</p>
+                      <p className="text-amber-950 text-sm font-serif leading-relaxed">{action.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Lore footer */}
             <div className="mt-6 text-center text-amber-800 text-xs font-serif italic border-t border-amber-700 pt-4">
-              "Knowledge of one's foe is the first step to victory" — Sun Tzu or something
+              {randomQuote}
             </div>
           </div>
         )}
